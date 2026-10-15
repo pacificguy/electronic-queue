@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: queue_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-queue}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-queue}
+      POSTGRES_DB: ${POSTGRES_DB:-queue}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - queue-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-queue} -d ${POSTGRES_DB:-queue}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build: ./backend
+    container_name: queue_server
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://queue:queue@db:5432/queue}
+      SECRET_KEY: ${SECRET_KEY:-please-change-this-secret-key}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-240}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin12345}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8000}:8000"
+    networks:
+      - queue-net
+
+  ui:
+    build: ./frontend
+    container_name: queue_ui
+    depends_on:
+      - server
+    ports:
+      - "${UI_PORT:-8080}:80"
+    networks:
+      - queue-net
+
+networks:
+  queue-net:
+    driver: bridge
+
+volumes:
+  pgdata:
