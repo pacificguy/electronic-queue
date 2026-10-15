@@ -36,6 +36,11 @@ docker compose up --build     # поднимает БД, API и UI с нуля �
 **Администратор по умолчанию:** `admin@example.com` / `admin12345`
 (задаётся переменными `ADMIN_EMAIL` и `ADMIN_PASSWORD`).
 
+**Клиент по умолчанию:** `client@example.com` / `client12345`
+(задаётся переменными `DEMO_CLIENT_EMAIL` и `DEMO_CLIENT_PASSWORD`).
+Клиент видит только свою электронную очередь (свои талоны) и не имеет доступа
+к разделам администратора.
+
 Остановить: `docker compose down`, остановить и удалить данные БД:
 `docker compose down -v`.
 
@@ -54,6 +59,7 @@ Alembic (`alembic upgrade head`), создаёт администратора и
 | `SECRET_KEY` | ключ подписи JWT | `please-change-this-secret-key` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | время жизни токена | `240` |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | стартовый администратор | `admin@example.com` / `admin12345` / `Administrator` |
+| `DEMO_CLIENT_EMAIL` / `DEMO_CLIENT_PASSWORD` / `DEMO_CLIENT_NAME` | демо-клиент | `client@example.com` / `client12345` / `Demo Client` |
 | `UI_PORT` / `API_PORT` | публикуемые порты UI и API | `8080` / `8000` |
 
 ## Архитектура
@@ -156,3 +162,21 @@ npm run dev     # http://localhost:5173, /api проксируется на loca
 
 - `main` — стабильная версия.
 - `dev` — текущая разработка; сюда вносятся изменения, затем вливаются в `main`.
+
+## Устранение неполадок
+
+**Администратор заблокировал сам себя и не может войти.** Начиная с текущей
+версии администратор не может заблокировать собственную учётную запись, а также
+последнего активного администратора — сервер вернёт `400`. Если блокировка уже
+случилась, перезапустите сервер: seed вернёт администратору роль `admin` и активность.
+
+```bash
+docker compose restart server
+```
+
+Альтернативно можно разблокировать вручную в БД:
+
+```bash
+docker compose exec -T db psql -U queue -d queue \
+  -c "update users set is_active = true, role = 'admin' where email = 'admin@example.com';"
+```

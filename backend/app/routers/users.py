@@ -39,6 +39,25 @@ def update_user(
     if user.id == current_admin.id and data.get("role") == Role.client:
         raise HTTPException(status_code=400, detail="Нельзя понизить собственную роль")
 
+    if user.id == current_admin.id and data.get("is_active") is False:
+        raise HTTPException(status_code=400, detail="Нельзя заблокировать собственную учётную запись")
+
+    if data.get("is_active") is False and user.role == Role.admin.value:
+        other_active_admins = (
+            db.query(User)
+            .filter(
+                User.role == Role.admin.value,
+                User.is_active.is_(True),
+                User.id != user.id,
+            )
+            .count()
+        )
+        if other_active_admins == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Нельзя заблокировать последнего активного администратора",
+            )
+
     if "full_name" in data:
         user.full_name = data["full_name"]
     if "is_active" in data:

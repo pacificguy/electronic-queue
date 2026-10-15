@@ -82,6 +82,8 @@ export default function AdminUsersPage() {
                   </select>
                   <button
                     className="btn btn-small"
+                    disabled={u.id === me.id}
+                    title={u.id === me.id ? "Нельзя заблокировать себя" : undefined}
                     onClick={() => update(u, { is_active: !u.is_active })}
                   >
                     {u.is_active ? "Заблокировать" : "Разблокировать"}

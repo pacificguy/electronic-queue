@@ -26,6 +26,9 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin12345}
       ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      DEMO_CLIENT_EMAIL: ${DEMO_CLIENT_EMAIL:-client@example.com}
+      DEMO_CLIENT_PASSWORD: ${DEMO_CLIENT_PASSWORD:-client12345}
+      DEMO_CLIENT_NAME: ${DEMO_CLIENT_NAME:-Demo Client}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     depends_on:
       db:

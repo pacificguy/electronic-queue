@@ -23,6 +23,25 @@ def ensure_admin() -> None:
             admin.is_active = True
             print(f"[seed] администратор {settings.admin_email} уже существует")
 
+        client = (
+            db.query(User).filter(User.email == settings.demo_client_email).first()
+        )
+        if client is None:
+            db.add(
+                User(
+                    email=settings.demo_client_email,
+                    full_name=settings.demo_client_name,
+                    hashed_password=hash_password(settings.demo_client_password),
+                    role=Role.client.value,
+                    is_active=True,
+                )
+            )
+            print(f"[seed] создан клиент {settings.demo_client_email}")
+        else:
+            client.role = Role.client.value
+            client.is_active = True
+            print(f"[seed] клиент {settings.demo_client_email} уже существует")
+
         if db.query(Service).count() == 0:
             db.add_all(
                 [

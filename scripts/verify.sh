@@ -264,6 +264,9 @@ expect_status "клиент на admin-эндпоинт /users → 403" 403 GET 
 expect_status "админ на /users → 200" 200 GET "$BASE/users" "${AAUTH[@]}"
 expect_status "админ на /stats → 200" 200 GET "$BASE/stats" "${AAUTH[@]}"
 
+ADMIN_ID="$(curl -s "$BASE/auth/me" "${AAUTH[@]}" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("id",""))' 2>/dev/null)"
+expect_status "админ не может заблокировать себя → 400" 400 PUT "$BASE/users/$ADMIN_ID" "${AAUTH[@]}" "${JSON[@]}" -d '{"is_active":false}'
+
 # bcrypt-хеш в БД
 HASH="$($DC exec -T db psql -U "$PGUSER" -d "$PGDB" -tAc \
   "select hashed_password from users where email='$EMAIL'" 2>/dev/null | tr -d '[:space:]')"

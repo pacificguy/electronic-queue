@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     admin_password: str = "admin12345"
     admin_name: str = "Administrator"
 
+    demo_client_email: str = "client@example.com"
+    demo_client_password: str = "client12345"
+    demo_client_name: str = "Demo Client"
+
     cors_origins: str = "*"
 
 
